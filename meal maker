@@ -5,20 +5,22 @@ app = Flask(__name__)
 
 @app.route('/api/gpt3', methods=['POST'])
 def gpt3_api_call():
-    prompt = request.json['prompt']
+    data = request.json
+
+    prompt = data['prompt']
 
     openai.api_key = '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'  # Replace with your actual OpenAI API key
 
-    desired_proteins = input("What is your desired amount of proteins in grams? ")
+    desired_proteins = data['desired_proteins']
     prompt += f"\nDesired amount of proteins: {desired_proteins} grams."
 
-    desired_carbs = input("What is your desired amount of carbohydrates per meal in grams? ")
+    desired_carbs = data['desired_carbs']
     prompt += f"\nDesired amount of carbohydrates per meal: {desired_carbs} grams."
 
-    user_input = input("Do you have any particular dish in mind? (yes/no) ")
+    user_input = data['user_input']
 
     if user_input.lower() == "yes":
-        dish_name = input("Please enter the name of the dish: ")
+        dish_name = data['dish_name']
         prompt += f"\n\nRecipe: {dish_name}\n\nIngredients:\n- [Ingredients for {dish_name}]"
     else:
         prompt += "\n\nPlease suggest a recipe that fulfills these dietary requirements."
@@ -38,7 +40,7 @@ def gpt3_api_call():
     if user_input.lower() == "yes":
         return jsonify({'response': f'- [Ingredients for {dish_name}]\n\n{recipe_output}'})
     else:
-        substitution_command = input("Enter any ingredient substitution commands (e.g., 'I don't have oregano. I do have parsley though.'): ")
+        substitution_command = data.get('substitution_command')
 
         if substitution_command:
             substitution_response = check_substitutions(recipe_output, substitution_command)
@@ -70,4 +72,4 @@ def extract_ingredient_substitution(substitution_command):
         elif part.lower().startswith("i do have"):
             substitution = part[10:].strip()
 
-    return ingredient
+    return ingredient, substitution
